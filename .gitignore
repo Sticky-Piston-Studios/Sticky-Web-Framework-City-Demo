@@ -1,0 +1,5 @@
+/database/volume
+/node_modules
+
+# MacOS files
+.DS_Store

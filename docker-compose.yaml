@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+# --- DATABASE -----------------------------------------
+  database:
+    image: mongo
+    container_name: swf-database
+    domainname: sticky-web-framework
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - 27017:27017
+    volumes:
+      - ./database/volume:/data/db # Local volume
+      #- ./config/database/init.js:/docker-entrypoint-initdb.d/init-mongo.js:ro # Setup script run on container start
+    networks:
+      - swf-net
+
+# --- NGINX SERVER -------------------------------------
+  nginx:
+    image: nginx:latest
+    container_name: swf-nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/volume/ssl_certificates:/etc/nginx/ssl:ro
+    restart: always
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - swf-net
+
+# --- STICKY WEB BACKEND -------------------------------
+  backend:
+    image: swf-backend
+    container_name: swf-backend
+    hostname: swf-backend
+    environment:
+      - ASPNETCORE_URLS=http://+:4000
+      - ASPNETCORE_ENVIRONMENT=${BACKEND_MODE}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - 4000:4000
+    volumes:
+      # Backend is running in /app directory inside the container,
+      # so it will look for the configuration.json file in its parent (according to the appsettings.json file)
+      - ./configuration.json:/configuration.json:ro
+    depends_on:
+      - database
+    networks:
+      - swf-net
+
+# --- STICKY WEB FRONTEND ------------------------------
+  frontend:
+    image: swf-frontend
+    container_name: swf-frontend
+    domainname: sticky-web-framework
+    environment:
+      - NEXT_TELEMETRY_DISABLED=1 # Disable Next Js default telemetry collecting: https://nextjs.org/telemetry
+      - API_URL=http://swf-backend:4000
+      - NEXT_PUBLIC_API_URL=http://localhost:4000
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    networks:
+      - swf-net
+      
+# --- CONTAINER NETWORK --------------------------------
+networks:
+  swf-net:
+    driver: bridge
