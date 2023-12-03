@@ -16,6 +16,7 @@ import i18n from "i18next";
 //  },
 //  fallbackLng: "pl", // Default language if a translation is missing
 //});
+i18n.init();
 
 function App({ Component, pageProps }) {
   const store = useStore();
