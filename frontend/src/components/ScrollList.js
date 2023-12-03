@@ -5,43 +5,35 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import EventListItem from "@/components/EventListItem";
+import ListItem from "@/components/ListItem";
 
 const ScrollList = forwardRef(
   (
     {
-      activeEvent,
-      eventHighlight,
-      handleSelectEventCallback,
-      handleHighlightEventCallback,
+      sensorData,
+      activeSensorData,
+      sensorDataHighlight,
+      handleSelectSensorDataCallback,
+      handleHighlightSensorDataCallback,
     },
     ref
   ) => {
     const itemRefs = useRef([]);
     const [renderedCount, setRenderedCount] = useState(0);
 
-    // dumym events
-    const events = [
-      { id: 1, name: "Event 1", date: "2022-01-01" },
-      { id: 2, name: "Event 2", date: "2022-02-01" },
-      { id: 3, name: "Event 3", date: "2022-03-01" },
-      { id: 4, name: "Event 4", date: "2022-04-01" },
-      { id: 5, name: "Event 5", date: "2022-05-01" },
-    ];
-
     useImperativeHandle(ref, () => ({
       rerender() {
         setRenderedCount(0); // Reset to 0
       },
 
-      scrollToActiveEvent() {
-        scrollToActiveEvent(); // Reset to 0
+      scrollToActiveSensorData() {
+        scrollToActiveSensorData(); // Reset to 0
       },
     }));
 
     const handleItemClick = (item) => {
       // Open details panel
-      handleSelectEventCallback(item);
+      handleSelectSensorDataCallback(item);
     };
 
     const fetchData = async () => {};
@@ -50,9 +42,11 @@ const ScrollList = forwardRef(
       fetchData();
     }, []);
 
-    const scrollToActiveEvent = () => {
-      if (activeEvent !== undefined) {
-        const index = events.findIndex((event) => event.id === activeEvent.id);
+    const scrollToActiveSensorData = () => {
+      if (activeSensorData !== undefined) {
+        const index = sensorData.findIndex(
+          (data) => data.id === activeSensorData.id
+        );
         if (index !== -1 && itemRefs.current[index]) {
           itemRefs.current[index].scrollIntoView({
             behavior: "smooth",
@@ -64,32 +58,36 @@ const ScrollList = forwardRef(
 
     // Scroll to active event on active event change
     useEffect(() => {
-      scrollToActiveEvent();
-    }, [activeEvent]);
+      scrollToActiveSensorData();
+    }, [activeSensorData]);
 
     // List item to display
-    const listItem = (event, index) => (
-      <div key={event.id}>
+    const listItem = (sensorData, index) => (
+      <div key={sensorData.id}>
         <div className="flex">
           <li
             className={"w-full"}
             ref={(el) => (itemRefs.current[index] = el)}
-            onClick={() => handleItemClick(event)}
+            onClick={() => handleItemClick(sensorData)}
             onMouseEnter={() => {
-              handleHighlightEventCallback({ event: event, onMap: false });
+              handleHighlightSensorDataCallback({
+                sensorData: sensorData,
+                onMap: false,
+              });
             }}
             onMouseLeave={() => {
-              handleHighlightEventCallback(undefined);
+              handleHighlightSensorDataCallback(undefined);
             }}
           >
-            <EventListItem
-              item={event}
+            <ListItem
+              item={sensorData}
               isHighlighted={
-                eventHighlight !== undefined &&
-                event.id === eventHighlight.event.id
+                sensorDataHighlight !== undefined &&
+                sensorData.id === sensorDataHighlight.id
               }
               isActive={
-                activeEvent !== undefined && event.id === activeEvent.id
+                activeSensorData !== undefined &&
+                sensorData.id === activeSensorData.id
               }
             />
           </li>
@@ -102,7 +100,9 @@ const ScrollList = forwardRef(
         {/* Header */}
         <h1 className="event-list-header">SWF-City-Demo</h1>
         {/* List */}
-        <ul>{events.map((event, index) => listItem(event, index))}</ul>
+        <ul>
+          {sensorData.map((sensorData, index) => listItem(sensorData, index))}
+        </ul>
       </>
     );
   }

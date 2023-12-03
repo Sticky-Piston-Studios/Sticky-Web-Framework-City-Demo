@@ -19,22 +19,22 @@ const DynamicMap = dynamic(() => import("@/components/Map"), { ssr: false });
 export default function Home() {
   const { t } = useTranslation();
   const scrollListRef = useRef();
-  const [activeEvent, setActiveEvent] = useState(undefined); // Active event (the one which is being displayed in opened details panel)
-  const [eventHighlight, setEventHighlight] = useState(undefined); // Structure storing highlighted event and highlighted on map or on event list info { event: undefined, onMap: false }
+  const [activeSensorData, setActiveSensorData] = useState(undefined);
+  const [sensorDataHighlight, setSensorDataHighlight] = useState(undefined);
   const [sensorData, setSensorData] = useState([]);
   const [lastUpdateTime, setLastUpdateTime] = useState(undefined); // Last update time of the data from the server
   const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
-  // Handle event select
-  const selectEvent = (event) => {
-    setActiveEvent(event);
+  // Handle sensor data select
+  const selectSensorData = (sensorData) => {
+    setActiveSensorData(sensorData);
   };
 
-  // Handle event highlight
-  // There are two flavours of highlight: "highlighted on event list" and "highlighted on marker (on map)"
-  // Parameter should be of type {event, onMap} or undefined
-  const highlightEvent = (highlight) => {
-    setEventHighlight(highlight);
+  // Handle sensor data highlight
+  // There are two flavours of highlight: "highlighted on sensor data list" and "highlighted on marker (on map)"
+  // Parameter should be of type {sensorData, onMap} or undefined
+  const highlightSensorData = (highlight) => {
+    setSensorDataHighlight(highlight);
   };
 
   // save just relevant data about air sensors
@@ -46,7 +46,7 @@ export default function Home() {
       }
       return {
         Id: index,
-        StationName: item.name,
+        StationName: item.station,
         Quality: item.ijp.name,
         Latitude: item.lat,
         Longitude: item.lon,
@@ -92,13 +92,14 @@ export default function Home() {
               <SimpleBar style={{ height: "100%" }}>
                 <ScrollList
                   ref={scrollListRef}
-                  activeEvent={activeEvent}
-                  eventHighlight={eventHighlight}
-                  handleSelectEventCallback={(event) => {
-                    selectEvent(event);
+                  sensorData={sensorData}
+                  activeSensorData={activeSensorData}
+                  sensorDataHighlight={sensorDataHighlight}
+                  handleSelectSensorDataCallback={(sensorData) => {
+                    selectSensorData(sensorData);
                   }}
-                  handleHighlightEventCallback={(highlight) => {
-                    highlightEvent(highlight);
+                  handleHighlightSensorDataCallback={(highlight) => {
+                    highlightSensorData(highlight);
                   }}
                 />
               </SimpleBar>
@@ -109,13 +110,14 @@ export default function Home() {
               {/* Map */}
               <DynamicMap
                 layers={[]}
-                activeEvent={activeEvent}
-                eventHighlight={eventHighlight}
-                handleSelectEventCallback={(event) => {
-                  selectEvent(event);
+                sensorData={sensorData}
+                activeSensorData={activeSensorData}
+                sensorDataHighlight={sensorDataHighlight}
+                handleSelectEventCallback={(sensorData) => {
+                  selectSensorData(sensorData);
                 }}
                 handleHighlightEventCallback={(highlight) => {
-                  highlightEvent(highlight);
+                  highlightSensorData(highlight);
                 }}
               />
             </div>

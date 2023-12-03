@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useCallback } from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  useMap,
+  Marker,
+  Popup,
+  divIcon,
+} from "react-leaflet";
 import L from "leaflet";
 import {
   EVENT_MARKER_SIZE,
@@ -15,20 +22,30 @@ import {
   EVENT_TYPES,
 } from "src/constants";
 
-// Empty component to handle flying to locations on the map when focused event id changes
-const MapComponent = ({ activeEvent, eventHighlight, markerRefs }) => {
-  const map = useMap();
-
-  return null;
-};
-
 // Return color of the first event type
 const getCategoryColor = (eventType) => {
   return eventType ? EVENT_TYPES[eventType.split(".")[0]].Color : "white";
 };
 
+// Function to get marker color based on air quality
+const getMarkerColor = (quality) => {
+  if (quality === "Bardzo dobry") {
+    return "darkgreen";
+  } else if (quality === "Dobry") {
+    return "lightgreen";
+  } else if (quality === "Umiarkowany") {
+    return "yellow";
+  } else if (quality === "Dostateczny") {
+    return "orange";
+  } else if (quality === "Zły") {
+    return "red";
+  } else {
+    return "gray"; // Default color
+  }
+};
+
 // Main map component
-const Map = ({ activeEvent, eventHighlight }) => {
+const Map = ({ sensorData, activeSensorData, sensorDataHighlight }) => {
   const markerRefs = useRef([]);
 
   // Create event icons function
@@ -85,16 +102,30 @@ const Map = ({ activeEvent, eventHighlight }) => {
       zoomControl={false}
       style={{ height: "100%" }}
     >
-      <MapComponent
-        activeEvent={activeEvent}
-        eventHighlight={eventHighlight}
-        markerRefs={markerRefs}
-      />
-
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         attribution="OpenStreetMap"
       />
+
+      {sensorData.map((data, index) => (
+        <Marker
+          key={index}
+          position={[data.Latitude, data.Longitude]}
+          icon={L.divIcon({
+            className: "custom-icon",
+            html: `<div style="background-color: ${getMarkerColor(
+              data.Quality
+            )}; width: 10px; height: 10px; border-radius: 50%;"></div>`,
+          })}
+        >
+          <Popup>
+            <div>
+              <h2>{data.StationName}</h2>
+              <p>Quality: {data.Quality}</p>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
     </MapContainer>
   );
 };
