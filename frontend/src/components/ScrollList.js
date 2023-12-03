@@ -45,9 +45,9 @@ const ScrollList = forwardRef(
     const scrollToActiveSensorData = () => {
       if (activeSensorData !== undefined) {
         const index = sensorData.findIndex(
-          (data) => data.id === activeSensorData.id
+          (data) => data.Id === activeSensorData.Id
         );
-        if (index !== -1 && itemRefs.current[index]) {
+        if (index !== 0 && itemRefs.current[index]) {
           itemRefs.current[index].scrollIntoView({
             behavior: "smooth",
             block: "center",

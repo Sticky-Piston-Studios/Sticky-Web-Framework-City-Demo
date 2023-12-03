@@ -1,16 +1,7 @@
-import React, { useEffect, useRef, useCallback } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  useMap,
-  Marker,
-  Popup,
-  divIcon,
-} from "react-leaflet";
+import React, { useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import {
-  EVENT_MARKER_SIZE,
-  EVENT_LOCATION_TYPES,
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_BOUNDARIES,
   DEFAULT_MAP_ZOOM,
@@ -19,13 +10,7 @@ import {
   MAP_ZOOM_DELTA,
   MAP_WHEEL_PX_PER_ZOOM_LEVEL,
   MAP_INTERTIA_DECELERATION,
-  EVENT_TYPES,
 } from "src/constants";
-
-// Return color of the first event type
-const getCategoryColor = (eventType) => {
-  return eventType ? EVENT_TYPES[eventType.split(".")[0]].Color : "white";
-};
 
 // Function to get marker color based on air quality
 const getMarkerColor = (quality) => {
@@ -39,56 +24,32 @@ const getMarkerColor = (quality) => {
     return "orange";
   } else if (quality === "Zły") {
     return "red";
+  } else if (quality === "Bardzo zły") {
+    return "darkred";
   } else {
     return "gray"; // Default color
   }
 };
 
+const MapComponent = ({ activeSensorData, sensorDataHighlight }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (activeSensorData) {
+      map.flyTo([activeSensorData.Latitude, activeSensorData.Longitude], 13);
+    }
+  }, [activeSensorData, map]);
+  return null;
+};
+
 // Main map component
-const Map = ({ sensorData, activeSensorData, sensorDataHighlight }) => {
-  const markerRefs = useRef([]);
-
-  // Create event icons function
-  const createIcon = useCallback((eventTypes, isHighlighted, opacity = 1) => {
-    const [category, typeName] = eventTypes[0].split(".");
-    const categoryColor = getCategoryColor(eventTypes[0]);
-    const otherTypeCount =
-      eventTypes.length > 1 ? "+" + (eventTypes.length - 1) : "";
-
-    // Get type icon
-    const iconData = EVENT_TYPES[category].Types.find(
-      (typeItem) => typeItem.name === typeName
-    )?.icon;
-
-    const iconHtml = `
-      <div class="event-marker ${isHighlighted ? "animated-icon" : ""}">
-        <div class="event-marker-inner" style="background-color: ${categoryColor}">
-          <div class="event-marker-icon">
-            <svg style="width: 100%; height: 100%;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" fill="white">
-              <path d="${iconData}"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-    `;
-
-    const iconAdditionalTypeCountHtml = `  
-      <div class="event-marker-number  ${isHighlighted ? "animated-icon" : ""}">
-        <p class="event-marker-icon-font" data-content="${otherTypeCount}">${otherTypeCount}</p>
-      </div>
-    `;
-
-    const icon = L.divIcon({
-      html: iconHtml + (otherTypeCount > 0 ? iconAdditionalTypeCountHtml : ""),
-      className: "",
-      opacity: opacity,
-      iconAnchor: [EVENT_MARKER_SIZE / 2, EVENT_MARKER_SIZE / 2],
-      popupAnchor: [0, -35],
-    });
-
-    return icon;
-  }, []);
-
+const Map = ({
+  sensorData,
+  activeSensorData,
+  sensorDataHighlight,
+  handleSelectSensorDataCallback,
+  handleHighlightSensorDataCallback,
+}) => {
   return (
     <MapContainer
       center={DEFAULT_MAP_CENTER}
@@ -107,15 +68,21 @@ const Map = ({ sensorData, activeSensorData, sensorDataHighlight }) => {
         attribution="OpenStreetMap"
       />
 
+      <MapComponent {...{ activeSensorData, sensorDataHighlight }} />
       {sensorData.map((data, index) => (
         <Marker
           key={index}
           position={[data.Latitude, data.Longitude]}
+          eventHandlers={{
+            click: () => {
+              handleSelectSensorDataCallback(data);
+            },
+          }}
           icon={L.divIcon({
             className: "custom-icon",
             html: `<div style="background-color: ${getMarkerColor(
               data.Quality
-            )}; width: 10px; height: 10px; border-radius: 50%;"></div>`,
+            )}; width: 20px; height: 20px; border-radius: 50%;"></div>`,
           })}
         >
           <Popup>

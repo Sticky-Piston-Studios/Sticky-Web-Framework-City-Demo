@@ -27,6 +27,7 @@ export default function Home() {
 
   // Handle sensor data select
   const selectSensorData = (sensorData) => {
+    console.log("Selected sensor data: ", sensorData);
     setActiveSensorData(sensorData);
   };
 
@@ -62,7 +63,7 @@ export default function Home() {
     fetch(`/api/action/air_sensors_get/?apikey=${apiKey}`)
       .then((response) => response.json())
       .then((data) => {
-        console.log("Got data: ", data);
+        //console.log("Got data: ", data);
         saveSensorData(data);
       })
       .catch((error) => {
@@ -77,8 +78,6 @@ export default function Home() {
 
   return (
     <>
-      {console.log("Component is being rendered")}
-
       <Head>
         <title>{t("MapPageTitle")}</title>
         <meta name="description" content={t("MapPageTitle")} />
@@ -109,14 +108,14 @@ export default function Home() {
             <div className="map-section">
               {/* Map */}
               <DynamicMap
-                layers={[]}
                 sensorData={sensorData}
                 activeSensorData={activeSensorData}
                 sensorDataHighlight={sensorDataHighlight}
-                handleSelectEventCallback={(sensorData) => {
+                handleSelectSensorDataCallback={(sensorData) => {
+                  console.log("Selected sensor data: ", sensorData);
                   selectSensorData(sensorData);
                 }}
-                handleHighlightEventCallback={(highlight) => {
+                handleHighlightSensorDataCallback={(highlight) => {
                   highlightSensorData(highlight);
                 }}
               />

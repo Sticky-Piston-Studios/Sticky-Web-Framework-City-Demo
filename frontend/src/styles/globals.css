@@ -516,10 +516,12 @@ body {
 .events-list {
   z-index: 10;
   background-color: white;
+  max-height: 100vh; /* Limit the height to the height of the viewport */
 }
 
 .scroll-container {
   overflow-y: hidden;
+  width: 20%;
 }
 
 .simplebar-scrollbar::before {
