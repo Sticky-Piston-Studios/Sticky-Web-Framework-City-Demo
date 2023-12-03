@@ -1,10 +1,9 @@
-
 import { API_URL } from "src/constants";
 import { callEndpoint, findEndpointConfig, config } from "src/utils.js";
 
 export default async function handler(req, res) {
   try {
-    const endpointPath = `/api/companies`;
+    const endpointPath = `/api/action/air_sensors_get/`;
 
     const endpointConfig = findEndpointConfig(endpointPath, req.method, "id");
 

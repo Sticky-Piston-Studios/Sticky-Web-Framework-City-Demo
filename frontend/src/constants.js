@@ -1,5 +1,6 @@
-// URL for the Backend API
-export const API_URL = "http://localhost:4000";
+// URL for the Warszawa UM API
+export const API_URL = "https://api.um.warszawa.pl";
+
 export const DEFAULT_MAP_BOUNDARIES = [
   [52.098, 20.6619], // south-west
   [52.4451, 21.3912], // north-east

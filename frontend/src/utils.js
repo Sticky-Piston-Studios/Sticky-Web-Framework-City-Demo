@@ -70,13 +70,17 @@ export async function callEndpoint(url, req, endpointBody) {
     body = JSON.stringify(req.body);
   }
 
+  let headers = {
+    Accept: "*/*",
+    "Accept-Encoding": "gzip, deflate, br",
+    Connection: "keep-alive",
+    "Cache-Control": "no-cache",
+    "Content-Type": "application/json",
+  };
   // Call the external API
   const response = await fetch(url, {
     method: req.method,
-    headers: {
-      ...req.headers, // Forward all headers from the original request
-      "Content-Type": "application/json",
-    },
+    headers: headers,
     body: body, // Send the body for POST and PATCH requests
   });
 
@@ -84,8 +88,8 @@ export async function callEndpoint(url, req, endpointBody) {
   const data = await response.json();
 
   // Convert the data to BSON HACK! (extract the data)
-  if (data.value && data.value.data)
-    data.value.data = bsonToJson(data.value.data);
+  //if (data.value && data.value.data)
+  //  data.value.data = bsonToJson(data.value.data);
 
   return {
     status: response.status,

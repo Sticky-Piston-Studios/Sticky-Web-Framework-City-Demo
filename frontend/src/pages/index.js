@@ -6,38 +6,20 @@ import { useTranslation } from "react-i18next";
 import dynamic from "next/dynamic";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
-//import CompanyComponent from "@/components/CompanyComponent";
-/*
-export default function Home() {
-  const { t } = useTranslation();
-  return (
-    <>
-      {console.log("Component is being rendered")}
 
-      <CompanyComponent />
-    </>
-  );
-}*/
+if (process.env.NODE_ENV !== "production") {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
 
 const DynamicMap = dynamic(() => import("@/components/Map"), { ssr: false });
 
 export default function Home() {
-  // Global dynamic constants
-  /*
-  document.documentElement.style.setProperty(
-    "--events-panel-width",
-    EVENTS_PANEL_WIDTH + "px"
-  );
-  document.documentElement.style.setProperty(
-    "--event-marker-size",
-    EVENT_MARKER_SIZE + "px"
-  );
-  */
-
   const { t } = useTranslation();
   const scrollListRef = useRef();
   const [activeEvent, setActiveEvent] = useState(undefined); // Active event (the one which is being displayed in opened details panel)
   const [eventHighlight, setEventHighlight] = useState(undefined); // Structure storing highlighted event and highlighted on map or on event list info { event: undefined, onMap: false }
+  const [sensorData, setSensorData] = useState([]);
+  const [lastUpdateTime, setLastUpdateTime] = useState(undefined); // Last update time of the data from the server
 
   // Handle event select
   const selectEvent = (event) => {
@@ -51,9 +33,42 @@ export default function Home() {
     setEventHighlight(highlight);
   };
 
-  // reload events in this area on page load
+  // save just relevant data about air sensors
+  const saveSensorData = (data) => {
+    const transformedData = data.result.map((item, index) => {
+      // Save the time from the first data item of each result
+      if (index === 0) {
+        setLastUpdateTime(item.data[0].time);
+      }
+      return {
+        Id: index,
+        StationName: item.name,
+        Quality: item.ijp.name,
+        Latitude: item.lat,
+        Longitude: item.lon,
+      };
+    });
+
+    console.log(transformedData);
+    setSensorData(transformedData);
+  };
+
+  const fetchStationData = async () => {
+    // Call the "GetAirSensors" endpoint
+    fetch(`/api/action/air_sensors_get/?apikey=${APIKEY}`)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Got data: ", data);
+        saveSensorData(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching sensor data", error);
+      });
+  };
+
+  // reload station data on reload
   useEffect(() => {
-    console.log("Running");
+    fetchStationData();
   }, []);
 
   return (
