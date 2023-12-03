@@ -7,6 +7,9 @@ import dynamic from "next/dynamic";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 
+// Import and configure dotenv
+require("dotenv").config();
+
 if (process.env.NODE_ENV !== "production") {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 }
@@ -20,6 +23,7 @@ export default function Home() {
   const [eventHighlight, setEventHighlight] = useState(undefined); // Structure storing highlighted event and highlighted on map or on event list info { event: undefined, onMap: false }
   const [sensorData, setSensorData] = useState([]);
   const [lastUpdateTime, setLastUpdateTime] = useState(undefined); // Last update time of the data from the server
+  const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
   // Handle event select
   const selectEvent = (event) => {
@@ -55,7 +59,7 @@ export default function Home() {
 
   const fetchStationData = async () => {
     // Call the "GetAirSensors" endpoint
-    fetch(`/api/action/air_sensors_get/?apikey=${APIKEY}`)
+    fetch(`/api/action/air_sensors_get/?apikey=${apiKey}`)
       .then((response) => response.json())
       .then((data) => {
         console.log("Got data: ", data);
